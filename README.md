@@ -1,6 +1,6 @@
-# 🤖 AI assistant about documents by Garaje
+# 🤖 AI documents assistant by Garaje
 
-Este proyecto permite subir documentos PDF a través de una interfaz web, extraer su texto con Google Vision API y obtener respuestas usando OpenAI.
+This project allows uploading PDF documents through a web interface, extracting their text using the Google Vision API, and obtaining answers using OpenAI
 
 ## 🚀 Technology
 
@@ -9,13 +9,6 @@ Este proyecto permite subir documentos PDF a través de una interfaz web, extrae
 - Google Cloud Storage
 - OpenAI API
 - HTML + JS frontend
-
-## ⚙️ Instalación
-
-```bash
-python -m venv .venv
-source .venv/bin/activate  # o .venv\Scripts\activate en Windows
-pip install -r app/requirements.txt
 
 ## 🚀 How to Run the POC (from PowerShell)
 
