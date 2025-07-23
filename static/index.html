@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Asistente IA sobre documentos by Garaje</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        h1 {
+      text-align: center;
+      background-color: #1a73e8;
+      color: white;
+      margin: 0;
+      padding: 15px;
+    }
+        label {
+            font-weight: bold;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+        }
+        .respuesta {
+            white-space: pre-wrap;
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        /* Spinner */
+        .spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 5px solid #ccc;
+            border-top-color: #1a73e8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Asistente IA sobre documentos</h1>
+
+    <label for="pregunta">Pregunta:</label>
+    <textarea id="pregunta" placeholder="Escribe tu pregunta aquí..."></textarea>
+
+    <label for="pdf">Adjuntar PDF:</label>
+    <input type="file" id="pdf" accept="application/pdf">
+
+    <button onclick="enviarPregunta()">Enviar</button>
+
+    <div class="spinner" id="spinner"></div>
+    <div class="respuesta" id="respuesta"></div>
+
+    <script>
+        async function enviarPregunta() {
+            const pregunta = document.getElementById("pregunta").value;
+            const pdfInput = document.getElementById("pdf").files[0];
+            const spinner = document.getElementById("spinner");
+            const respuesta = document.getElementById("respuesta");
+
+            if (!pregunta) {
+                alert("Por favor, escribe una pregunta.");
+                return;
+            }
+
+            respuesta.textContent = "";
+            spinner.style.display = "block";
+
+            const formData = new FormData();
+            formData.append("texto", pregunta);
+            if (pdfInput) {
+                formData.append("file", pdfInput);
+            }
+
+            try {
+                const response = await fetch("http://localhost:8000/chat", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await response.json();
+                respuesta.textContent = data.respuesta;
+            } catch (err) {
+                respuesta.textContent = "❌ Error: " + err.message;
+            } finally {
+                spinner.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
