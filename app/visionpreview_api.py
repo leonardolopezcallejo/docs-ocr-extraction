@@ -33,7 +33,7 @@ app.add_middleware(
 class Pregunta(BaseModel):
     texto: str
 
-def subir_a_gcs(file: UploadFile) -> str:
+def subir_a_gcs(file: UploadFile) -> str: 
     """Sube el archivo PDF a GCS y devuelve el URI."""
     bucket = gcs_client.bucket(GCS_BUCKET_NAME)
     blob_name = f"{uuid.uuid4()}_{file.filename}"

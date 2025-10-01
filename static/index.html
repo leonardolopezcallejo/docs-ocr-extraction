@@ -12,12 +12,12 @@
             gap: 20px;
         }
         h1 {
-      text-align: center;
-      background-color: #1a73e8;
-      color: white;
-      margin: 0;
-      padding: 15px;
-    }
+            text-align: center;
+            background-color: #1a73e8;
+            color: white;
+            margin: 0;
+            padding: 15px;
+        }
         label {
             font-weight: bold;
         }
@@ -31,6 +31,21 @@
             padding: 15px;
             border-radius: 5px;
             margin-top: 10px;
+            min-height: 50px;
+        }
+
+        /* Controles de Modo */
+        .mode-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #e8f0fe;
+            border-radius: 5px;
+        }
+        #mode-status {
+            font-weight: bold;
+            color: #1a73e8;
         }
 
         /* Spinner */
@@ -53,6 +68,11 @@
 <body>
     <h1>Asistente IA sobre documentos</h1>
 
+    <div class="mode-container">
+        <div>Modo Actual: <span id="mode-status">MOCK</span></div>
+        <button onclick="toggleMode()">Alternar Modo</button>
+    </div>
+
     <label for="pregunta">Pregunta:</label>
     <textarea id="pregunta" placeholder="Escribe tu pregunta aquí..."></textarea>
 
@@ -65,37 +85,94 @@
     <div class="respuesta" id="respuesta"></div>
 
     <script>
+        // --- FLAG PRINCIPAL PARA ELEGIR MOCK O REAL ---
+        let MOCK_MODE = true; // Empieza en modo Mock
+        // ---------------------------------------------
+
+        const spinner = document.getElementById("spinner");
+        const respuestaDiv = document.getElementById("respuesta");
+        const modeStatus = document.getElementById("mode-status");
+
+        // Función para actualizar el estado visible
+        function updateModeStatus() {
+            if (MOCK_MODE) {
+                modeStatus.textContent = "MOCK (SIMULACIÓN)";
+                modeStatus.style.color = "orange";
+            } else {
+                modeStatus.textContent = "REAL (BACKEND)";
+                modeStatus.style.color = "green";
+            }
+        }
+
+        // Función para alternar el modo con el botón
+        function toggleMode() {
+            MOCK_MODE = !MOCK_MODE;
+            updateModeStatus();
+            respuestaDiv.textContent = `Modo cambiado a: ${MOCK_MODE ? 'MOCK' : 'REAL'}.`;
+        }
+
+        // Inicializa el estado al cargar
+        updateModeStatus();
+
+
         async function enviarPregunta() {
             const pregunta = document.getElementById("pregunta").value;
             const pdfInput = document.getElementById("pdf").files[0];
-            const spinner = document.getElementById("spinner");
-            const respuesta = document.getElementById("respuesta");
 
             if (!pregunta) {
                 alert("Por favor, escribe una pregunta.");
                 return;
             }
 
-            respuesta.textContent = "";
+            respuestaDiv.textContent = "";
             spinner.style.display = "block";
 
-            const formData = new FormData();
-            formData.append("texto", pregunta);
-            if (pdfInput) {
-                formData.append("file", pdfInput);
-            }
+            if (MOCK_MODE) {
+                // --- MODO MOCK (SIMULACIÓN) ---
+                const delayMs = 3000; 
 
-            try {
-                const response = await fetch("http://localhost:8000/chat", {
-                    method: "POST",
-                    body: formData
-                });
-                const data = await response.json();
-                respuesta.textContent = data.respuesta;
-            } catch (err) {
-                respuesta.textContent = "❌ Error: " + err.message;
-            } finally {
-                spinner.style.display = "none";
+                const respuestaMock = `
+¡Hola! Esta es una **respuesta MOCK**.
+Has preguntado: "${pregunta}"
+Modo: MOCK. Servidor no contactado.
+${pdfInput ? `Adjuntaste: **${pdfInput.name}**` : "No adjuntaste PDF."}
+Simulando una latencia de ${delayMs / 1000} segundos.
+`;
+                await new Promise(resolve => setTimeout(resolve, delayMs));
+
+                try {
+                    respuestaDiv.textContent = respuestaMock;
+                } catch (err) {
+                    respuestaDiv.textContent = "❌ Error de MOCK: Falla en la simulación.";
+                } finally {
+                    spinner.style.display = "none";
+                }
+
+            } else {
+                // --- MODO REAL (PRODUCCIÓN) ---
+                const formData = new FormData();
+                formData.append("texto", pregunta);
+                if (pdfInput) {
+                    formData.append("file", pdfInput);
+                }
+
+                try {
+                    const response = await fetch("http://localhost:8000/chat", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    respuestaDiv.textContent = data.respuesta;
+                } catch (err) {
+                    respuestaDiv.textContent = "❌ Error REAL: No se pudo conectar con el backend (http://localhost:8000/chat). Detalle: " + err.message;
+                } finally {
+                    spinner.style.display = "none";
+                }
             }
         }
     </script>
